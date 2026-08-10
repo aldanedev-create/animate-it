@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Demo – Animate It</title>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; background: #0a0a1a; }
+    #info {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 20px;
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+      pointer-events: none;
+      z-index: 10;
+    }
+    #info span { color: #48dbfb; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="info">Scroll to drive the car 🚗</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animate-it-ss@latest/dist/animate.umd.js"></script>
+
+  <script>
+    const { animate, animateThree, timeline, defineDirective } = window.animateIt;
+
+    // --- Custom Directive: Spin Wheels ---
+    defineDirective('spinWheels', (builder, rotations = 4) => {
+      return builder
+        .to({ rotation: { x: rotations * 360 } })
+        .duration(1500)
+        .ease('linear');
+    });
+
+    // --- Scene ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a1a);
+    scene.fog = new THREE.Fog(0x0a0a1a, 20, 40);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(5, 4, 8);
+    camera.lookAt(0, 0.5, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    // --- Lights ---
+    const ambient = new THREE.AmbientLight(0x404060, 0.5);
+    scene.add(ambient);
+
+    const dirLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+    dirLight.position.set(5, 10, 7);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    scene.add(dirLight);
+
+    const fillLight = new THREE.DirectionalLight(0x48dbfb, 0.3);
+    fillLight.position.set(-3, 1, -2);
+    scene.add(fillLight);
+
+    // --- Car Group ---
+    const carGroup = new THREE.Group();
+    carGroup.position.y = 0.5;
+    scene.add(carGroup);
+
+    // Car body (simple box)
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xe94560, roughness: 0.4, metalness: 0.6 });
+    const bodyGeo = new THREE.BoxGeometry(2.8, 0.6, 1.2);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.3;
+    body.castShadow = true;
+    carGroup.add(body);
+
+    // Cabin (glass)
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x48dbfb, roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.6 });
+    const glassGeo = new THREE.BoxGeometry(1.4, 0.5, 1.0);
+    const glass = new THREE.Mesh(glassGeo, glassMat);
+    glass.position.set(0, 0.7, 0);
+    carGroup.add(glass);
+
+    // Headlights
+    const lightMat = new THREE.MeshStandardMaterial({ color: 0xfff5e6, emissive: 0xfff5e6, emissiveIntensity: 0.5 });
+    const lightGeo = new THREE.SphereGeometry(0.15, 8, 8);
+    const hl1 = new THREE.Mesh(lightGeo, lightMat);
+    hl1.position.set(1.4, 0.2, -0.5);
+    carGroup.add(hl1);
+    const hl2 = new THREE.Mesh(lightGeo, lightMat);
+    hl2.position.set(1.4, 0.2, 0.5);
+    carGroup.add(hl2);
+
+    // Tail lights
+    const tailMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.3 });
+    const tailGeo = new THREE.SphereGeometry(0.12, 8, 8);
+    const tl1 = new THREE.Mesh(tailGeo, tailMat);
+    tl1.position.set(-1.4, 0.2, -0.5);
+    carGroup.add(tl1);
+    const tl2 = new THREE.Mesh(tailGeo, tailMat);
+    tl2.position.set(-1.4, 0.2, 0.5);
+    carGroup.add(tl2);
+
+    // Wheels
+    function createWheel(x, z) {
+      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+      const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.15, 16);
+      const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+      wheel.rotation.z = Math.PI / 2;
+      wheel.position.set(x, 0, z);
+      wheel.castShadow = true;
+      carGroup.add(wheel);
+      // Rim
+      const rimMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.3, metalness: 0.7 });
+      const rimGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.16, 8);
+      const rim = new THREE.Mesh(rimGeo, rimMat);
+      rim.rotation.z = Math.PI / 2;
+      rim.position.set(x, 0, z);
+      carGroup.add(rim);
+      return { wheel, rim };
+    }
+
+    const wheels = [
+      createWheel(0.9, -0.7),
+      createWheel(0.9, 0.7),
+      createWheel(-0.9, -0.7),
+      createWheel(-0.9, 0.7)
+    ];
+
+    // --- Animate Car ---
+    // 1. Initial roll-in
+    carGroup.position.x = -8;
+    animate(carGroup.position)
+      .to({ x: 0 })
+      .duration(1500)
+      .ease('outCubic')
+      .play();
+
+    // 2. Spin wheels continuously
+    wheels.forEach(w => {
+      animateThree(w.wheel)
+        .rotateX(360)
+        .duration(1000)
+        .repeat(-1)
+        .ease('linear')
+        .play();
+    });
+
+    // 3. Animate headlights pulse
+    animateThree(hl1)
+      .set({ 'material.emissiveIntensity': 1 })
+      .duration(800)
+      .repeat(-1)
+      .yoyo(true)
+      .ease('inOutSine')
+      .play();
+    animateThree(hl2)
+      .set({ 'material.emissiveIntensity': 1 })
+      .duration(800)
+      .delay(400)
+      .repeat(-1)
+      .yoyo(true)
+      .ease('inOutSine')
+      .play();
+
+    // 4. Car body color cycle
+    animateThree(body)
+      .set({ 'material.color.r': 1, 'material.color.g': 0, 'material.color.b': 0 })
+      .duration(3000)
+      .repeat(-1)
+      .yoyo(true)
+      .ease('inOutSine')
+      .play();
+
+    // --- Scroll Interaction (Drive the car) ---
+    let scrollTarget = 0;
+    let currentScroll = 0;
+
+    window.addEventListener('scroll', () => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(window.scrollY / maxScroll, 1);
+      scrollTarget = progress * 12 - 4; // -4 to 8
+    });
+
+    // Smooth scroll following
+    function updateScroll() {
+      currentScroll += (scrollTarget - currentScroll) * 0.05;
+      carGroup.position.x = currentScroll;
+      // Also rotate car slightly based on movement
+      carGroup.rotation.y = (currentScroll + 4) * 0.05;
+      requestAnimationFrame(updateScroll);
+    }
+    updateScroll();
+
+    // --- Render Loop ---
+    function render() {
+      requestAnimationFrame(render);
+      // Rotate the entire scene slightly for dramatic effect
+      // (but keep camera looking at car)
+      const target = carGroup.position.clone();
+      target.y += 0.5;
+      camera.lookAt(target);
+      renderer.render(scene, camera);
+    }
+    render();
+
+    // --- Resize ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Scroll hint: simulate a small scroll to trigger initial state
+    setTimeout(() => {
+      window.scrollBy(0, 1);
+      window.scrollBy(0, -1);
+    }, 500);
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic Animation – Animate It</title>
+  <style>
+    body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #1a1a2e; }
+    canvas { border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="600" height="400"></canvas>
+
+  <!-- Load Animate It from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/animate-it-ss@latest/dist/animate.umd.js"></script>
+
+  <script>
+    const { animate, easing } = window.animateIt;
+
+    // --- State ---
+    const state = {
+      x: 50,
+      y: 200,
+      radius: 30,
+      color: '#e94560'
+    };
+
+    // --- Animation ---
+    animate(state)
+      .to({ x: 550, y: 50 })
+      .duration(1500)
+      .ease('outCubic')
+      .then(() => {
+        // Return with a bounce
+        animate(state)
+          .to({ x: 50, y: 200 })
+          .duration(1200)
+          .ease('outBounce')
+          .play();
+      })
+      .play();
+
+    // --- Render Loop ---
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw background grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < canvas.width; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+      }
+      for (let i = 0; i < canvas.height; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvas.width, i);
+        ctx.stroke();
+      }
+
+      // Draw ball
+      ctx.shadowColor = state.color;
+      ctx.shadowBlur = 30;
+      ctx.beginPath();
+      ctx.arc(state.x, state.y, state.radius, 0, Math.PI * 2);
+      ctx.fillStyle = state.color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      requestAnimationFrame(render);
+    }
+    render();
+  </script>
+</body>
+</html>

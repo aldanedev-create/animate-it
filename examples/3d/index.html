@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Animation – Animate It</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #0f0f1a; }
+  </style>
+</head>
+<body>
+
+  <!-- Load Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Load Animate It -->
+  <script src="https://cdn.jsdelivr.net/npm/animate-it-ss@latest/dist/animate.umd.js"></script>
+
+  <script>
+    const { animate, animateThree, timeline } = window.animateIt;
+
+    // --- Scene setup ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0f0f1a);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(4, 3, 8);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // --- Lights ---
+    const ambientLight = new THREE.AmbientLight(0x404060);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    const pointLight = new THREE.PointLight(0xff6b6b, 0.5);
+    pointLight.position.set(-3, 2, 4);
+    scene.add(pointLight);
+
+    // --- Objects ---
+    const geometry = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x48dbfb,
+      roughness: 0.3,
+      metalness: 0.2,
+      emissive: new THREE.Color(0x0abde3),
+      emissiveIntensity: 0.2
+    });
+    const cube = new THREE.Mesh(geometry, material);
+    cube.castShadow = true;
+    scene.add(cube);
+
+    // Ground
+    const groundGeo = new THREE.PlaneGeometry(10, 10);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.8 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -1;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // --- Animate! ---
+    timeline()
+      .parallel(
+        animateThree(cube).moveX(3).duration(1200).ease('outQuad'),
+        animateThree(cube).rotateY(720).duration(1200).ease('outQuad'),
+        animateThree(cube).scaleX(1.5).duration(1200).ease('outQuad')
+      )
+      .then(
+        animateThree(cube).moveX(0).duration(1000).ease('inQuad')
+      )
+      .then(
+        animateThree(cube).scaleX(1).duration(500).ease('inOutQuad')
+      )
+      .then(() => {
+        // Loop forever
+        animateThree(cube).rotateX(360).duration(2000).repeat(-1).ease('linear').play();
+      })
+      .play();
+
+    // Camera animation (subtle orbit)
+    let angle = 0;
+    setInterval(() => {
+      angle += 0.01;
+      const radius = 8;
+      camera.position.x = Math.sin(angle) * radius;
+      camera.position.z = Math.cos(angle) * radius;
+      camera.lookAt(0, 0.5, 0);
+    }, 16);
+
+    // --- Render loop ---
+    function render() {
+      requestAnimationFrame(render);
+      renderer.render(scene, camera);
+    }
+    render();
+
+    // --- Handle resize ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Texture Animations – Animate It</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #0d0d1a; }
+  </style>
+</head>
+<body>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animate-it-ss@latest/dist/animate.umd.js"></script>
+
+  <script>
+    const { animate, animateThree, timeline } = window.animateIt;
+
+    // --- Scene ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d0d1a);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 6);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // --- Texture (procedural) ---
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 20; i++) {
+      ctx.fillStyle = `hsl(${i * 36}, 80%, 50%)`;
+      ctx.beginPath();
+      ctx.arc(256 + Math.sin(i * 0.5) * 150, 256 + Math.cos(i * 0.7) * 150, 30 + i * 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+
+    // --- Object ---
+    const geo = new THREE.SphereGeometry(1.8, 64, 64);
+    const mat = new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 0.2,
+      metalness: 0.3,
+      emissive: new THREE.Color(0x48dbfb),
+      emissiveIntensity: 0.2
+    });
+    const sphere = new THREE.Mesh(geo, mat);
+    sphere.position.set(0, 0, 0);
+    scene.add(sphere);
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0x404060, 0.6);
+    scene.add(ambient);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(2, 5, 3);
+    scene.add(light);
+
+    // --- Animate Texture ---
+    // Offset UV (scroll)
+    animate(texture)
+      .to({ offset: { x: 1 } })
+      .duration(3000)
+      .repeat(-1)
+      .ease('linear')
+      .play();
+
+    // Animate emissive color (via generic .set)
+    animateThree(sphere)
+      .set({ 'material.emissive.r': 0, 'material.emissive.g': 1, 'material.emissive.b': 0 })
+      .duration(2000)
+      .repeat(-1)
+      .yoyo(true)
+      .ease('inOutSine')
+      .play();
+
+    // Animate rotation
+    animateThree(sphere)
+      .rotateY(360)
+      .duration(4000)
+      .repeat(-1)
+      .ease('linear')
+      .play();
+
+    // --- Render ---
+    function render() {
+      requestAnimationFrame(render);
+      renderer.render(scene, camera);
+    }
+    render();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

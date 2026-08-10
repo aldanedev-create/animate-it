@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Camera Animations – Animate It</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #1a1a2e; }
+  </style>
+</head>
+<body>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animate-it-ss@latest/dist/animate.umd.js"></script>
+
+  <script>
+    const { animate, animateThree, timeline } = window.animateIt;
+
+    // --- Scene ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a2e);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 10);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // --- Objects ---
+    const geo = new THREE.SphereGeometry(1.5, 32, 32);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x48dbfb, roughness: 0.2, metalness: 0.8 });
+    const sphere = new THREE.Mesh(geo, mat);
+    sphere.position.set(0, 0, 0);
+    scene.add(sphere);
+
+    // Ground ring
+    const ringGeo = new THREE.RingGeometry(2, 2.5, 64);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0xff6b6b, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = -1.8;
+    scene.add(ring);
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0x404060);
+    scene.add(ambient);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(2, 5, 3);
+    scene.add(light);
+
+    // --- Camera Animations ---
+    // 1. Zoom in/out
+    timeline()
+      .parallel(
+        animateThree(camera).fov(30).duration(1500).ease('inOutQuad'),
+        animate(camera.position).to({ z: 3 }).duration(1500).ease('inOutQuad')
+      )
+      .then(
+        animateThree(camera).fov(75).duration(1500).ease('inOutQuad')
+      )
+      .then(
+        animate(camera.position).to({ z: 10 }).duration(1500).ease('inOutQuad')
+      )
+      .then(() => {
+        // Orbit around
+        const orbit = animate(camera.position)
+          .to({ x: 3, y: 1.5, z: 0 })
+          .duration(2000)
+          .ease('inOutQuad')
+          .then(() => {
+            animate(camera.position)
+              .to({ x: -3, y: -1.5, z: 0 })
+              .duration(2000)
+              .ease('inOutQuad')
+              .then(() => {
+                animate(camera.position)
+                  .to({ x: 0, y: 0, z: 10 })
+                  .duration(1500)
+                  .ease('inOutQuad')
+                  .play();
+              })
+              .play();
+          })
+          .play();
+      })
+      .play();
+
+    // Always look at sphere
+    function updateCameraLook() {
+      camera.lookAt(sphere.position);
+      requestAnimationFrame(updateCameraLook);
+    }
+    updateCameraLook();
+
+    // --- Render ---
+    function render() {
+      requestAnimationFrame(render);
+      sphere.rotation.x += 0.005;
+      sphere.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+    render();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

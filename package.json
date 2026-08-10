@@ -1,0 +1,67 @@
+{
+  "name": "animate-it-ss",
+  "version": "0.1.0",
+  "description": "A lightweight domain-specific animation engine for Three.js with universal plugin support.",
+  "type": "module",
+  "main": "dist/animate.cjs",
+  "module": "dist/animate.js",
+  "unpkg": "dist/animate.umd.js",
+  "jsdelivr": "dist/animate.umd.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/animate.js",
+      "require": "./dist/animate.cjs",
+      "types": "./dist/index.d.ts",
+      "umd": "./dist/animate.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "three": ">=0.150.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/three": "^0.160.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@vitest/ui": "^1.2.0",
+    "eslint": "^8.56.0",
+    "terser": "^5.27.0",
+    "three": "^0.160.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11",
+    "vite-plugin-dts": "^3.7.0",
+    "vitest": "^1.2.0"
+  },
+  "keywords": [
+    "threejs",
+    "animation",
+    "dsl",
+    "timeline",
+    "tween",
+    "performance",
+    "lightweight"
+  ],
+  "author": "Aldane Hutchinson",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aldanedev-create/animate-it"
+  },
+  "bugs": {
+    "url": "https://github.com/aldanedev-create/animate-it/issues"
+  },
+  "homepage": "https://github.com/aldanedev-create/animate-it#readme"
+}

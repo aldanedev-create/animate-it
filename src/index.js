@@ -1,22 +1,12 @@
 // Core
 export { animate } from './animate';
-export type { AnimationInstance, AnimationOptions } from './animate';
-
 // Timeline
 export { timeline } from './timeline';
-export type { Timeline } from './timeline';
-
 // Easing
 export { easing } from './easing';
-export type { EasingName } from './easing';
-
 // Three.js integration
 export { animateThree } from './three';
-
 // Directives
 export { defineDirective, getDirective } from './directive';
-export type { DirectiveFn } from './directive';
-
 // Plugin system
 export { use, pluginAPI } from './plugin';
-export type { Plugin, PluginAPI } from './plugin';
