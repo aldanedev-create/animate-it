@@ -9,7 +9,7 @@ Animate It provides a simple, chainable API for creating animations, timelines, 
 Install Animate It and its Three.js peer dependency:
 
 ```bash
-npm install animate-it three
+npm install animate-it-ss three
 ```
 
 > **Note:** Three.js is a peer dependency. You must install it separately.
