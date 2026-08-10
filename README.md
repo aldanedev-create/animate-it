@@ -3,9 +3,10 @@
 
  
  <p align="center">
-  <img src="https://raw.githubusercontent.com/aldanedev-create/animate-it/main/assets/flaxon.png" alt="flaxon Logo"
+  <img src="https://raw.githubusercontent.com/aldanedev-create/animate-it/main/assets/animate-it-ss.png" alt="animate logo"
    width="200"/>
 </p>
+
 
 Author and creator: Aldane Hutchinson
 
